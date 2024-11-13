@@ -2,7 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import format_date
 
@@ -19,11 +19,13 @@ class AccountMoveLine(models.Model):
         for moveline in self:
             if moveline.start_date and not moveline.end_date:
                 raise ValidationError(
-                    _("Missing End Date for line '%s'.") % (moveline.display_name)
+                    self.env._(f"Missing End Date for line '{moveline.display_name}'.")
                 )
             if moveline.end_date and not moveline.start_date:
                 raise ValidationError(
-                    _("Missing Start Date for line '%s'.") % (moveline.display_name)
+                    self.env._(
+                        f"Missing Start Date for line '{moveline.display_name}'."
+                    )
                 )
             if (
                 moveline.end_date
@@ -31,13 +33,12 @@ class AccountMoveLine(models.Model):
                 and moveline.start_date > moveline.end_date
             ):
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "Start Date (%(start_date)s) should be before End Date "
                         "(%(end_date)s) for line '%(name)s'."
+                    ).format(
+                        start_date=format_date(self.env, moveline.start_date),
+                        end_date=format_date(self.env, moveline.end_date),
+                        name=moveline.display_name,
                     )
-                    % {
-                        "start_date": format_date(self.env, moveline.start_date),
-                        "end_date": format_date(self.env, moveline.end_date),
-                        "name": moveline.display_name,
-                    }
                 )
